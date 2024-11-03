@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Title</title>
+    <meta charset="utf-8">
+    <style>
+        @import url(https://fonts.googleapis.com/css?family=Inter);
+        @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+        @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+        body {
+            font-family: 'Inter';
+            margin: 0;
+            padding: 0;
+        }
+
+        .logo {
+            background-image: url('training_360.jpg');
+            background-size: contain;
+            background-repeat: no-repeat;
+            position: absolute;
+            top: 1em;
+            right: 1em;
+            width: 110px;
+            height: 128px;
+            z-index: 0;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Inter';
+            font-weight: normal;
+        }
+
+        .remark-code, .remark-inline-code {
+            font-family: 'Ubuntu Mono';
+        }
+
+        .file-selector {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            z-index: 1000;
+        }
+
+        .file-input {
+            margin: 1rem 0;
+        }
+
+        .start-button {
+            padding: 8px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .start-button:hover {
+            background: #0056b3;
+        }
+
+        .presentation-content {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- File selector -->
+    <div id="fileSelector" class="file-selector">
+        <h2>Select Presentation File</h2>
+        <input type="file"
+               id="fileInput"
+               class="file-input"
+               accept=".md"
+               onchange="handleFileSelect(this)">
+        <br>
+        <button id="startButton"
+                class="start-button"
+                onclick="startPresentation()"
+                style="display: none;">
+            Start Presentation
+        </button>
+    </div>
+
+    <!-- Presentation content -->
+    <div id="presentationContent" class="presentation-content">
+        <textarea id="source"></textarea>
+    </div>
+
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+    <script>
+        let selectedFile = null;
+
+        function handleFileSelect(input) {
+            if (input.files && input.files[0]) {
+                selectedFile = input.files[0];
+                document.getElementById('startButton').style.display = 'inline-block';
+            } else {
+                document.getElementById('startButton').style.display = 'none';
+            }
+        }
+
+        function startPresentation() {
+            if (!selectedFile) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const textarea = document.getElementById('source');
+                textarea.innerHTML = e.target.result;
+
+                // Hide file selector
+                document.getElementById('fileSelector').style.display = 'none';
+                // Show presentation content
+                document.getElementById('presentationContent').style.display = 'block';
+
+                // Create slideshow
+                var slideshow = remark.create({ ratio: "16:9" });
+
+                // Add logo to slides
+                document
+                    .querySelectorAll(
+                        '.remark-slide-content' +
+                        ':not(.title-slide)' +
+                        ':not(.hide-logo)'
+                    )
+                    .forEach(el => {
+                        el.innerHTML += '<div class="logo"></div>';
+                    });
+            };
+
+            reader.onerror = function(e) {
+                console.error('Error reading file:', e);
+                alert('Error reading file. Please try again.');
+            };
+
+            reader.readAsText(selectedFile);
+        }
+    </script>
+</body>
+</html>
