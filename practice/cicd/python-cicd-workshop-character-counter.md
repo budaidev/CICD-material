@@ -149,8 +149,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Default command
-ENTRYPOINT ["python", "src/character_count.py"]
-CMD ["data/sample.txt"]
+CMD ["python", "src/character_count.py", "data/sample.txt"]
 ```
 
 ### Task Configuration
@@ -172,7 +171,7 @@ tasks:
     desc: Run Docker container with sample file
     deps: [docker-build]
     cmds:
-      - docker run --rm --name {{.CONTAINER_NAME}} -v ${PWD}/sample_files:/app/data {{.IMAGE_NAME}} data/sample.txt
+      - docker run --rm --name {{.CONTAINER_NAME}} -v ${PWD}/sample_files:/app/data {{.IMAGE_NAME}} python src/character_count.py data/sample.txt
 
   docker-test:
     desc: Run tests in Docker
@@ -180,12 +179,18 @@ tasks:
     cmds:
       - docker run --rm {{.IMAGE_NAME}} python -m pytest tests/ -v --cov=src
 
-  docker-lint:
-    desc: Run linting in Docker
+  docker-format:
+    desc: Auto-format Python code
     deps: [docker-build]
     cmds:
-      - docker run --rm {{.IMAGE_NAME}} python -m flake8 src/
-      - docker run --rm {{.IMAGE_NAME}} python -m black src/ --check
+      - docker run --rm -v ${PWD}/src:/app/src {{.IMAGE_NAME}} sh -c "cd /app && black src/"
+
+  docker-lint:
+    desc: Run linting in Docker
+    deps: [docker-build, docker-format]
+    cmds:
+      - docker run --rm -v ${PWD}/src:/app/src {{.IMAGE_NAME}} sh -c "cd /app && flake8 src/"
+      - docker run --rm -v ${PWD}/src:/app/src {{.IMAGE_NAME}} sh -c "cd /app && black src/ --check"
 
   docker-clean:
     desc: Clean Docker resources
@@ -202,6 +207,7 @@ tasks:
     cmds:
       - task: docker-clean
       - task: docker-build
+      - task: docker-format
       - task: docker-lint
       - task: docker-test
       - task: docker-run
