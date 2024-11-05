@@ -1,0 +1,16 @@
+version: '3'
+services:
+  jenkins:
+    build: .
+    image: jenkins-with-docker
+    ports:
+      - 8095:8080
+    volumes:
+      - //var/run/docker.sock:/var/run/docker.sock  # Note the double forward slash for Windows
+      - jenkins-data:/var/jenkins_home
+    environment:
+      - DOCKER_HOST=tcp://host.docker.internal:2375  # Add this line for Windows Docker Desktop
+
+volumes:
+  jenkins-data:
+    name: jenkins-data
