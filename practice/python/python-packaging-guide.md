@@ -169,14 +169,24 @@ my_cli_app/
 1. Create CLI entry point (`src/mycli/cli.py`):
 ```python
 import argparse
-from .core import calculate_sum, calculate_average
+import ast
+from src.mylibrary.calculator_core import calculate_sum, calculate_average
+
+
+def parse_list(string):
+    try:
+        lst = ast.literal_eval(string)
+        if not isinstance(lst, list):
+            raise ValueError
+        return [float(x) for x in lst]
+    except (ValueError, SyntaxError):
+        raise argparse.ArgumentTypeError("Input must be a list of numbers")
+
 
 def main():
-    parser = argparse.ArgumentParser(description="Mathematical operations CLI")
-    parser.add_argument("numbers", type=float, nargs="+", help="Numbers to process")
-    parser.add_argument("--operation", choices=["sum", "average"], default="sum",
-                      help="Operation to perform")
-
+    parser = argparse.ArgumentParser(description="Math in CLI")
+    parser.add_argument("numbers", type=parse_list, help="Numbers to process")
+    parser.add_argument("--operation", choices=["sum", "average"], default="sum")
     args = parser.parse_args()
 
     if args.operation == "sum":
@@ -186,8 +196,10 @@ def main():
         result = calculate_average(args.numbers)
         print(f"Average: {result}")
 
+
 if __name__ == "__main__":
     main()
+
 ```
 
 2. Update setup.py for CLI:

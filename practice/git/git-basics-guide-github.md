@@ -238,6 +238,11 @@ repos:
 pre-commit install
 ```
 
+test all
+```bash
+pip install pre-commit && pre-commit install && pre-commit run --all-files
+```
+
 4. Test commit:
 ```bash
 git add .
