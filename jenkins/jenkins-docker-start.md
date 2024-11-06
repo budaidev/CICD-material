@@ -33,3 +33,7 @@ code .
 ```bash
 docker-compose up -d
 ```
+
+## Docker setup
+
+
